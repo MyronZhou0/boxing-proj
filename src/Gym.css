@@ -1,0 +1,16 @@
+.Gym-ul {
+    list-style-type: none; /* Remove default bullets */
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-between; /* Spread items across the container */
+}
+
+.Gym-ul li {
+    flex: 1; /* Distribute available space equally among all items */
+    text-align: center; /* Center text inside each item */
+    margin: 0 10px; /* Optional: Add horizontal space between items */
+    background-color: lightgray; /* Optional: Background color for visibility */
+    padding: 20px; /* Optional: Padding inside items */
+    color: blue; /* Text color */
+}

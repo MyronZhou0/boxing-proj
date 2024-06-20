@@ -1,0 +1,46 @@
+/* GymTable.css */
+.tableContainer {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .tableHead {
+    display: flex;
+    background-color: #f0f0f0;
+    font-weight: bold;
+    padding: 10px;
+    margin: 0;
+    list-style-type: none;
+  }
+  
+  .tableHead li {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+  }
+  
+  .gymList {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  
+  .gymList li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .gymList li:last-child {
+    border-bottom: none;
+  }
+  
+  /* Ensure gym list items match table headers */
+  .gymList li > div {
+    flex: 1;
+    text-align: center;
+  }
+  
