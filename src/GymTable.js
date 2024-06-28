@@ -4,12 +4,18 @@ import Gym from './Gym';
 import GymPage from './GymPage';
 import { Link, Route, Routes, useRoutes, useLocation } from 'react-router-dom';
 
+// const gymArray = [
+//   {gymName: 'Fred', rating: 5, renown: 5, location: '123 Main St', distance: '1m'},
+//   {gymName: 'Bobbys', rating: 5, renown: 5, location: '143 Main St', distance: '1m'},
+//   {gymName: 'Ace', rating: 5, renown: 5, location: '12 Main St', distance: '1m'},
+//   {gymName: 'Canelos', rating: 5, renown: 5, location: '1 Main St', distance: '1m'},
+// ];
+
 const gymArray = [
-  {gymName: 'Fred', rating: 5, renown: 5, location: '123 Main St', distance: '1m'},
-  {gymName: 'Bobbys', rating: 5, renown: 5, location: '143 Main St', distance: '1m'},
-  {gymName: 'Ace', rating: 5, renown: 5, location: '12 Main St', distance: '1m'},
-  {gymName: 'Canelos', rating: 5, renown: 5, location: '1 Main St', distance: '1m'},
-];
+  {gymName: 'Wild Card', id: "zZAkSRxkrBXgSlFnJe1mlw", rating: "?", renown: "?", location: "?", distance: "?"},
+  {gymName: "Rounder's MMA", id: "PfU_CgDIrZk6OdqoVF9cig", rating: "?", renown: "?", location: "?", distance: "?"},
+  {gymName: "Gleason's Gym", id: "WzFLaf_59vDo-5P1Xyn3-A", rating: "?", renown: "?", location: "?", distance: "?"},
+]
 
 function GymTable() {
   const location = useLocation();

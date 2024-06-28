@@ -1,13 +1,21 @@
 import express from 'express';
 import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+import cors from 'cors';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
-async function getYelpData() {
-  const response = await fetch('https://api.yelp.com/v3/businesses/zZAkSRxkrBXgSlFnJe1mlw', {
+// Enable CORS for all routes
+app.use(cors());
+
+async function getYelpData(businessId) {
+  const response = await fetch(`https://api.yelp.com/v3/businesses/${businessId}`, {
     headers: {
-      'Authorization': 'Bearer YOUR_YELP_API_KEY', // Replace with your actual API Key
+      'Authorization': `Bearer ${process.env.YELP_API_KEY}`, // Use the environment variable for the API key
       'Accept': 'application/json'
     }
   });
@@ -20,9 +28,11 @@ async function getYelpData() {
 }
 
 // Endpoint to fetch data from Yelp API
-app.get('/yelp-data', async (req, res) => {
+app.get('/yelp-data/:businessId', async (req, res) => {
+  const { businessId } = req.params; // Get the business ID from the request parameters
+
   try {
-    const data = await getYelpData();
+    const data = await getYelpData(businessId); // Pass the business ID to the function
     res.json(data); // Send Yelp API response back to client
   } catch (error) {
     console.error('Error fetching data:', error);

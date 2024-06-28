@@ -82,17 +82,17 @@ function GymPage() {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!gymData) return <div>No data available</div>;
-
+  console.log(gymData);
   return (
     <div>
       <h2>Gym Details</h2>
       <p>Name: {gymData.name}</p>
       <p>Rating: {gymData.rating}</p>
-      <p>Location: {gymData.location.address1}</p>
+      <p>Location: {gymData.location.display_address}</p>
       <p>Description: {gymData.description}</p>
-      <p>Phone: {gymData.display_phone}</p>
+      <p>Phone: {gymData.phone}</p>
       <p>Price: {gymData.price}</p>
-      <p>Reviews:</p>
+      {/* <p>Reviews:</p>
       <ul className="gymList">
         {gymData.reviews.map((review, index) => (
           <li key={index}>
@@ -102,8 +102,8 @@ function GymPage() {
               rating={review.rating}
             />
           </li>
-        ))}
-      </ul>
+        ))} */}
+      {/* </ul> */}
     </div>
   );
 }
