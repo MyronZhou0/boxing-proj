@@ -12,30 +12,35 @@ const port = process.env.PORT || 3001;
 // Enable CORS for all routes
 app.use(cors());
 
-async function getYelpData(businessId) {
-  const response = await fetch(`https://api.yelp.com/v3/businesses/${businessId}`, {
+const yelpApiKey = process.env.YELP_API_KEY; // Secure API key
+
+async function getGymData(businessId) {
+  const url = `https://api.yelp.com/v3/businesses/${businessId}`;
+  const response = await fetch(url, {
     headers: {
-      'Authorization': `Bearer ${process.env.YELP_API_KEY}`, // Use the environment variable for the API key
+      'Authorization': `Bearer ${yelpApiKey}`,
       'Accept': 'application/json'
     }
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch data from Yelp API');
+    const errorText = await response.text();
+    const errorMessage = `Failed to fetch data from Yelp API. Status: ${response.status}, Response: ${errorText}`;
+    throw new Error(errorMessage);
   }
 
   return response.json();
 }
 
 // Endpoint to fetch data from Yelp API
-app.get('/yelp-data/:businessId', async (req, res) => {
-  const { businessId } = req.params; // Get the business ID from the request parameters
+app.get('/gymPage/:businessId', async (req, res) => {
+  const { businessId } = req.params;
 
   try {
-    const data = await getYelpData(businessId); // Pass the business ID to the function
-    res.json(data); // Send Yelp API response back to client
+    const gymData = await getGymData(businessId);
+    res.json(gymData);
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error.message);
     res.status(500).json({ error: 'Failed to fetch data from Yelp API' });
   }
 });
