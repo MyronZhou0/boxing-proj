@@ -8,6 +8,7 @@ function Gym(props) {
       <ul className="Gym-ul">
         <li>{props.gymName}</li>
         <li>{props.rating}</li>
+        <li>{props.reviewCount}</li>
         <li>{props.renown}</li>
         <li>{props.location}</li>
         <li>{props.distance}</li>

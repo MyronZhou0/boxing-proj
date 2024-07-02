@@ -10,7 +10,7 @@ function GymPage() {
   useEffect(() => {
     const fetchGymData = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/gymPage/${gymId}`);
+        const response = await fetch(`http://localhost:3002/gymPage/${gymId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch data from server');
         }
@@ -39,6 +39,7 @@ function GymPage() {
       <p>Description: {gymData.description}</p>
       <p>Phone: {gymData.phone}</p>
       <p>Price: {gymData.price}</p>
+      <p>Website: {gymData.url}</p>
       {/* <p>Reviews:</p>
       <ul className="gymList">
         {gymData.reviews.map((review, index) => (
