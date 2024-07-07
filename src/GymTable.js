@@ -79,9 +79,9 @@ function GymTable() {
     <div>
       <div>
         <form onSubmit={handleSubmit}>
-          <label for="locationInput">Location: </label>
+          <label htmlFor="locationInput">Location: </label>
           <input type="text" id="locationInput" value={locationValue} onChange={handleLocationChange}/>
-          <label for="currentLocation">Use Current Location</label>
+          <label htmlFor="currentLocation">Use Current Location</label>
           <input type="checkbox" id="currentLocation" checked={useCurrentLocation} onChange={handleLocationChecked}/>
           <input type="submit"/>
         </form>

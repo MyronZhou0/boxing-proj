@@ -3,6 +3,8 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { exec } from 'child_process'; // Import exec from child_process
+import { pipeline } from '@xenova/transformers';
+
 
 // Load environment variables from .env file
 dotenv.config();
@@ -47,7 +49,7 @@ app.get('/gymPage/:businessId', async (req, res) => {
     console.log(yelpUrl);
 
     // Invoke Python script with yelpUrl as argument
-    exec(`python3 webscraper/webscraper.py ${yelpUrl}`, (error, stdout, stderr) => {
+    exec(`python3 -u webscraper/webscraper.py ${yelpUrl}`, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return res.status(500).json({ error: 'Failed to execute Python script' });
@@ -62,6 +64,7 @@ app.get('/gymPage/:businessId', async (req, res) => {
       let scriptOutput;
       try {
         scriptOutput = JSON.parse(stdout);
+        console.log(scriptOutput);
       } catch (parseError) {
         console.error('Failed to parse Python script output:', parseError);
       }

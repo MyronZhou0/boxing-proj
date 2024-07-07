@@ -9,7 +9,7 @@ def fetch_yelp_page(url):
         response.raise_for_status()
         return response.content
     except requests.RequestException:
-        return {"error": "Failed to reach Yelp page"}
+        return {"url": "unknown", "error": "Failed to reach Yelp page"}
 
 def get_business_website(yelp_page_content):
     soup = BeautifulSoup(yelp_page_content, 'html.parser')
@@ -17,7 +17,7 @@ def get_business_website(yelp_page_content):
         if 'biz_redir' in link['href']:
             if link.text and link['href'].startswith('/biz_redir'):
                 return link.text
-    return {"error": "No business page found on Yelp page"}
+    return {"url": "unknown", "error": "No business page found on Yelp page"}
 
 def contains_keywords(url, keywords):
     url_lower = url.lower()
@@ -66,27 +66,26 @@ def find_prices(start_url):
 
         visited.add(current_url)
     
-    return {"error": "Price not found"}
+    return {"url": start_url, "error": "cannot find price"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(json.dumps([{"error": "No URL provided"}]))
+        print(json.dumps({"url": "unkown", "error": "No URL provided"}))
         sys.exit(1)
 
     yelp_url = sys.argv[1]
 
     yelp_page_content = fetch_yelp_page(yelp_url)
-    if "error" in yelp_page_content:
-        print(json.dumps([yelp_page_content]))
-        sys.exit(1)
-
+    if isinstance(yelp_page_content, dict):
+        if "error" in yelp_page_content:
+            print(json.dumps(yelp_page_content), flush=True)
+            sys.exit(1)
     bus_web = get_business_website(yelp_page_content)
-    if "error" in bus_web:
-        print(json.dumps([bus_web]))
-        sys.exit(1)
-
+    
+    if isinstance(bus_web, dict):
+        if "error" in bus_web:
+            print(json.dumps(bus_web), flush=True)
+            sys.exit(1)
+    #may or may not have error; process that in gymTable.mjs
     price_info = find_prices(bus_web)
-    if "error" in price_info:
-        print(json.dumps([bus_web, price_info]))
-    else:
-        print(json.dumps([bus_web, {"price": price_info["price"]}]))
+    print(json.dumps(price_info), flush=True)
