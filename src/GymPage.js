@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom';
 
 function GymPage() {
   const { gymId } = useParams(); // Retrieve the gymId parameter from URL
-  const [gymData, setGymData] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log(gymId);
+
   useEffect(() => {
     const fetchGymData = async () => {
       try {
@@ -14,8 +14,8 @@ function GymPage() {
         if (!response.ok) {
           throw new Error('Failed to fetch data from server');
         }
-        const data = await response.json();
-        setGymData(data);
+        const responseData = await response.json();
+        setData(responseData);
       } catch (error) {
         setError(error);
       } finally {
@@ -28,21 +28,28 @@ function GymPage() {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
-  if (!gymData) return <div>No data available</div>;
-  console.log(gymData);
+  if (!data) return <div>No data available</div>;
+
   return (
     <div>
       <h2>Gym Details</h2>
-      <p>Name: {gymData.name}</p>
-      <p>Rating: {gymData.rating}</p>
-      <p>Location: {gymData.location.display_address}</p>
-      <p>Description: {gymData.description}</p>
-      <p>Phone: {gymData.phone}</p>
-      <p>Price: {gymData.price}</p>
-      <p>Website: {gymData.url}</p>
+      <p>Name: {data.gymData.name}</p>
+      <p>Rating: {data.gymData.rating}</p>
+      <p>Location: {data.gymData.location.display_address.join(', ')}</p>
+      <p>Description: {data.gymData.description}</p>
+      <p>Phone: {data.gymData.phone}</p>
+      {data.scriptOutput && data.scriptOutput.length > 1 ? (
+        <div>
+          <p>Monthly Price: ${data.scriptOutput[1]}</p>
+          <p>Website: {data.scriptOutput[0]}</p>
+        </div>
+      ) : (
+        <p>Error occurred when finding monthly price or no data available</p>
+      )}
+      {/* Uncomment the following lines if you want to display reviews */}
       {/* <p>Reviews:</p>
       <ul className="gymList">
-        {gymData.reviews.map((review, index) => (
+        {data.gymData.reviews.map((review, index) => (
           <li key={index}>
             <Review
               user={review.user.name}
@@ -50,8 +57,8 @@ function GymPage() {
               rating={review.rating}
             />
           </li>
-        ))} */}
-      {/* </ul> */}
+        ))}
+      </ul> */}
     </div>
   );
 }

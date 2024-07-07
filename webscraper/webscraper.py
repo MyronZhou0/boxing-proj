@@ -1,60 +1,92 @@
 from bs4 import BeautifulSoup
 import requests
+import sys
+import json
 
-testUrl = 'https://www.lobosboxingclub.com/'
-monthlyPrice = ""
+def fetch_yelp_page(url):
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        return response.content
+    except requests.RequestException:
+        return {"error": "Failed to reach Yelp page"}
+
+def get_business_website(yelp_page_content):
+    soup = BeautifulSoup(yelp_page_content, 'html.parser')
+    for link in soup.find_all('a', href=True):
+        if 'biz_redir' in link['href']:
+            if link.text and link['href'].startswith('/biz_redir'):
+                return link.text
+    return {"error": "No business page found on Yelp page"}
 
 def contains_keywords(url, keywords):
     url_lower = url.lower()
     return any(keyword in url_lower for keyword in keywords)
 
-def find_prices(startUrl):
+def find_prices(start_url):
+    start_url = "https://" + start_url
     visited = set()
-    visitQueue = [startUrl]
-    priceFound = False
-    global monthlyPrice
-    keywordArray = ["member", "fee", "price", "pricing", "classes"]
+    visit_queue = [start_url]
+    keyword_array = ["member", "fee", "price", "pricing", "classes"]
 
-    while visitQueue and not priceFound:
-        currentUrl = visitQueue.pop(0)
-        if currentUrl in visited:
+    while visit_queue:
+        current_url = visit_queue.pop(0)
+        if current_url in visited:
             continue
 
         try:
-            # Make the request and handle potential errors
-            response = requests.get(currentUrl, timeout=5)
-            response.raise_for_status()  # Raise an HTTPError for bad responses
-        except requests.RequestException as e:
-            print(f"An error occurred: {e}")
+            response = requests.get(current_url, timeout=5)
+            response.raise_for_status()
+        except requests.RequestException:
             continue
 
-        # Process the content
         content = BeautifulSoup(response.content, "html.parser")
         text = content.get_text().lower()
-        monthIndex = text.find("month" or "4 weeks")
-        if monthIndex != -1:
-            dollarIndex = text.find("$", monthIndex)
-            if dollarIndex != -1:
-                # Loop through the next characters after the $ sign
-                currentIndex = dollarIndex + 1
-                priceDigits = []
-                while currentIndex < len(text) and (text[currentIndex].isdigit() or text[currentIndex] == '.'):
-                    priceDigits.append(text[currentIndex])
-                    currentIndex += 1
+        month_index = text.find("month")
+        if month_index == -1:
+            month_index = text.find("4 weeks")
 
-                if priceDigits:
-                    monthlyPrice = "".join(priceDigits)
-                    priceFound = True
-                    continue
+        if month_index != -1:
+            dollar_index = text.find("$", month_index)
+            if dollar_index != -1:
+                i = dollar_index + 1
+                price_digits = []
+                while i < len(text) and (text[i].isdigit() or text[i] == '.'):
+                    price_digits.append(text[i])
+                    i += 1
 
-        # Add links to the queue to visit
+                if price_digits:
+                    monthly_price = "".join(price_digits)
+                    return {"url": start_url, "price": monthly_price}
+
         for link in content.find_all('a', href=True):
-            full_url = requests.compat.urljoin(currentUrl, link['href'])
-            if full_url not in visited and full_url.startswith('http') and contains_keywords(full_url,keywordArray):
-                visitQueue.append(full_url)
+            full_url = requests.compat.urljoin(current_url, link['href'])
+            if full_url not in visited and full_url.startswith('http') and contains_keywords(full_url, keyword_array):
+                visit_queue.append(full_url)
 
-        # Add currentUrl to visited because it's finished
-        visited.add(currentUrl)
+        visited.add(current_url)
+    
+    return {"error": "Price not found"}
 
-find_prices(testUrl)
-print(monthlyPrice)
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print(json.dumps([{"error": "No URL provided"}]))
+        sys.exit(1)
+
+    yelp_url = sys.argv[1]
+
+    yelp_page_content = fetch_yelp_page(yelp_url)
+    if "error" in yelp_page_content:
+        print(json.dumps([yelp_page_content]))
+        sys.exit(1)
+
+    bus_web = get_business_website(yelp_page_content)
+    if "error" in bus_web:
+        print(json.dumps([bus_web]))
+        sys.exit(1)
+
+    price_info = find_prices(bus_web)
+    if "error" in price_info:
+        print(json.dumps([bus_web, price_info]))
+    else:
+        print(json.dumps([bus_web, {"price": price_info["price"]}]))

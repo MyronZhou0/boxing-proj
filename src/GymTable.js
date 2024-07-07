@@ -12,10 +12,25 @@ function GymTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [locationValue, setLocationValue] = useState("");
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [currentLatitude, setCurrentLatitude] = useState(0);
+  const [currentLongitude, setCurrentLongitude] = useState(0);
+
+  // RUNS ONCE WHEN COMPONENT IS RENDERED AND AGAIN ONCE FORM DATA IS CHANGED
   useEffect(() => {
     const fetchGymsData = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/gymTable`);
+        const response = await fetch(`http://localhost:3001/gymTable`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
         if (!response.ok) {
           throw new Error('Failed to fetch data from server');
         }
@@ -28,14 +43,49 @@ function GymTable() {
       }
     };
     fetchGymsData();
-  }, []); // Empty dependency array ensures this runs only once
+  }, [formData]);
+
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!gymData) return <div>No data available</div>;
   console.log(gymData)
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(getPosition)
+    }
+    else
+    {
+      console.log("CANNOT USE CURRENT LOCATION PLEASE GIVE PERMISSIONS");
+    }
+      setFormData({location: locationValue, latitude: currentLatitude, longitude: currentLongitude, currentLocation: useCurrentLocation})
+  }
+
+  function getPosition(position){
+    setCurrentLatitude(position.coords.latitude);
+    setCurrentLongitude(position.coords.longitude);
+  }
+
+  function handleLocationChange(event) {
+    setLocationValue(event.target.value)
+  }
+  function handleLocationChecked(event) {
+    setUseCurrentLocation(event.target.checked)
+  }
+
   return (
     <div>
+      <div>
+        <form onSubmit={handleSubmit}>
+          <label for="locationInput">Location: </label>
+          <input type="text" id="locationInput" value={locationValue} onChange={handleLocationChange}/>
+          <label for="currentLocation">Use Current Location</label>
+          <input type="checkbox" id="currentLocation" checked={useCurrentLocation} onChange={handleLocationChecked}/>
+          <input type="submit"/>
+        </form>
+      </div>
       {!isGymPage && (
         <div className="tableContainer">
           <ul className="tableHead">
@@ -43,6 +93,7 @@ function GymTable() {
             <li>Rating</li>
             <li>Review Count</li>
             <li>Renown</li>
+            <li>Price</li>
             <li>Address</li>
             <li>Distance</li>
           </ul>
@@ -54,6 +105,7 @@ function GymTable() {
                   rating={item.rating}
                   reviewCount={item.review_count}
                   renown={item.renown}
+                  price={item.price}
                   location={item.location.display_address}
                   distance={item.distance}
                 />
