@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from transformers import pipeline
 import requests
 import sys
 import json
@@ -9,7 +10,7 @@ def fetch_yelp_page(url):
         response.raise_for_status()
         return response.content
     except requests.RequestException:
-        return {"url": "unknown", "error": "Failed to reach Yelp page"}
+        return {"url": "unknown", "error": "Failed to reach Yelp page", "desc": "description cannot be generated"}
 
 def get_business_website(yelp_page_content):
     soup = BeautifulSoup(yelp_page_content, 'html.parser')
@@ -17,7 +18,20 @@ def get_business_website(yelp_page_content):
         if 'biz_redir' in link['href']:
             if link.text and link['href'].startswith('/biz_redir'):
                 return link.text
-    return {"url": "unknown", "error": "No business page found on Yelp page"}
+    return {"url": "unknown", "error": "No business page found on Yelp page", "desc": "description cannot generated"}
+
+def generate_gym_desc(bus_web):
+    bus_web = "https://" + bus_web
+    generator = pipeline("summarization", model="openai-community/gpt2") 
+    try:
+        response = requests.get(bus_web, timeout=5)
+        response.raise_for_status()
+    except requests.RequestException:
+        return {"url": bus_web, "error": "Failed to reach business website", "desc": "description cannot be generated"}
+    content = BeautifulSoup(response.content, "html.parser")
+    inputText = " ".join([p.get_text() for p in content.find_all("p")])
+    generatedText = generator(inputText, min_length = 120, max_length = 200, do_sample = True, top_k=50, top_p=.95)
+    return generatedText[0]["summary_text"]
 
 def contains_keywords(url, keywords):
     url_lower = url.lower()
@@ -81,11 +95,19 @@ if __name__ == "__main__":
             print(json.dumps(yelp_page_content), flush=True)
             sys.exit(1)
     bus_web = get_business_website(yelp_page_content)
-    
+
     if isinstance(bus_web, dict):
         if "error" in bus_web:
             print(json.dumps(bus_web), flush=True)
             sys.exit(1)
-    #may or may not have error; process that in gymTable.mjs
+    #able to get the bus_web successfully
+    gymDesc = generate_gym_desc(bus_web)
+    if isinstance(gymDesc, dict):
+        if "error" in gymDesc:
+            gymDesc = "failed to reach business website"
+    #may or may not have be able to find the price
+    #generate description successfully
     price_info = find_prices(bus_web)
+    if isinstance(price_info, dict):
+        price_info["desc"] = gymDesc
     print(json.dumps(price_info), flush=True)

@@ -1,0 +1,4 @@
+.searchForm{
+    display: flex;
+    justify-content: flex-start; /* Aligns children to the left */
+}

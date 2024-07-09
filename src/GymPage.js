@@ -27,7 +27,7 @@ function GymPage() {
     };
 
     fetchGymData();
-  }, [gymId]);
+  });
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -47,7 +47,7 @@ function GymPage() {
       <p>Name: {data.gymData.name}</p>
       <p>Rating: {data.gymData.rating}</p>
       <p>Location: {data.gymData.location.display_address.join(', ')}</p>
-      <p>Description: {data.gymData.description}</p>
+      <p>Description: {data.scriptOutput.desc}</p>
       <p>Phone: {data.gymData.phone}</p>
         <div>
           {priceHTML}
