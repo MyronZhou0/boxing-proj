@@ -17,14 +17,15 @@ const yelpApiKey = process.env.YELP_API_KEY;
 
 async function getGymsData() {
   let url;
-
+  let pageOffset = 15 * (formData.page - 1);
+  console.log(pageOffset);
   if (formData.currentLocation) {
-    url = `https://api.yelp.com/v3/businesses/search?latitude=${formData.latitude}&longitude=${formData.longitude}&categories=boxing&limit=10&sort_by=rating`;
+    url = `https://api.yelp.com/v3/businesses/search?latitude=${formData.latitude}&longitude=${formData.longitude}&categories=boxing&limit=15&sort_by=${formData.sort}&offset=${pageOffset.toString()}`;
   } else if (formData.location !== "") {
     const encodedLocation = encodeURIComponent(formData.location);
-    url = `https://api.yelp.com/v3/businesses/search?location=${encodedLocation}&categories=boxing&limit=10&sort_by=rating`;
+    url = `https://api.yelp.com/v3/businesses/search?location=${encodedLocation}&categories=boxing&limit=15&sort_by=${formData.sort}&offset=${pageOffset.toString()}`;
   } else {
-    url = `https://api.yelp.com/v3/businesses/search?location=Los%20Angeles&categories=boxing&limit=10&sort_by=rating`;
+    url = `https://api.yelp.com/v3/businesses/search?location=Los%20Angeles&categories=boxing&limit=15&sort_by=${formData.sort}&offset=${pageOffset.toString()}`;
   }
 
   const response = await fetch(url, {
@@ -52,7 +53,9 @@ app.post('/gymTable', async (req, res) => {
         location: "Los Angeles",
         latitude: 0,
         longitude: 0,
-        currentLocation: false
+        currentLocation: false,
+        sort: "distance",
+        page: 1
       };
     }
 

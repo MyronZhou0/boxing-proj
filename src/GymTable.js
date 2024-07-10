@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import './GymTable.css'; // Import your CSS file
-import Gym from './Gym';
+//import Gym from './Gym';
 import GymPage from './GymPage';
 import SearchBar from './SearchBar';
+import TablePagination from './TablePagination';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
-import { Table, TableBody, TableHead, TableCell, TableContainer, TableRow } from '@mui/material';
+import { Table, TableBody, TableHead, TableCell, TableRow } from '@mui/material';
 
 
 function GymTable() {
   const location = useLocation();
   const isGymPage = location.pathname.startsWith('/gyms/');
-
+  //data from yelp api
   const [gymData, setGymData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  //user input from search bar
   const [locationValue, setLocationValue] = useState("");
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  const [currentLatitude, setCurrentLatitude] = useState(0);
+  const [currentLongitude, setCurrentLongitude] = useState(0);
+  const [useSort, setSort] = useState("distance");
+  //user input from pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  //input sent to backend with input from search bar and pagination
   const [formData, setFormData] = useState({});
 
   // RUNS ONCE WHEN COMPONENT IS RENDERED AND AGAIN ONCE FORM DATA IS CHANGED
@@ -49,6 +56,7 @@ function GymTable() {
   if (error) return <div>Error: {error.message}</div>;
   if (!gymData) return <div>No data available</div>;
   console.log(gymData);
+
   const handleFormSubmit = (formData) => {
     setFormData(formData);
   };
@@ -61,18 +69,25 @@ function GymTable() {
         setLocationValue={setLocationValue}
         useCurrentLocation={useCurrentLocation}
         setUseCurrentLocation={setUseCurrentLocation}
+        currentLatitude = {currentLatitude}
+        setCurrentLatitude = {setCurrentLatitude}
+        currentLongitude = {currentLongitude}
+        setCurrentLongitude = {setCurrentLongitude}
+        useSort={useSort}
+        setSort={setSort}
+        currentPage={currentPage}
       />
       {!isGymPage && (
         <div className="tableContainer">
           <Table sx={{ minWidth: 650 }}>
           <TableHead>
           <TableRow>
-            <TableCell>Gym Name</TableCell>
-            <TableCell align="center">Rating</TableCell>
-            <TableCell align="center">Review Count</TableCell>
-            <TableCell align="center">Price</TableCell>
-            <TableCell align="center">Address</TableCell>
-            <TableCell align="center">Distance (Miles)</TableCell>
+            <TableCell style={{fontWeight: "bold"}}>Gym Name</TableCell>
+            <TableCell align="center" style={{fontWeight: "bold"}}>Rating</TableCell>
+            <TableCell align="center" style={{fontWeight: "bold"}}>Review Count</TableCell>
+            <TableCell align="center" style={{fontWeight: "bold"}}>Price</TableCell>
+            <TableCell align="center" style={{fontWeight: "bold"}}>Address</TableCell>
+            <TableCell align="center" style={{fontWeight: "bold"}}>Distance (Miles)</TableCell>
           </TableRow>
           </TableHead>
           <TableBody>
@@ -87,41 +102,26 @@ function GymTable() {
               <TableCell align="center">{item.rating}</TableCell>
               <TableCell align="center">{item.review_count}</TableCell>
               <TableCell align="center">{item.price ? item.price : "N/A"}</TableCell>
-              <TableCell align="center">{item.location.display_address}</TableCell>
+              <TableCell align="center">{item.location.display_address.join(", ")}</TableCell>
               <TableCell align="center">{(item.distance/1609.34).toFixed(1)} mi.</TableCell>
             </TableRow>
           ))}
         </TableBody>
-          </Table>
-          {/* <ul className="tableHead">
-            <li>Gym Name</li>
-            <li>Rating</li>
-            <li>Review Count</li>
-            <li>Renown</li>
-            <li>Price</li>
-            <li>Address</li>
-            <li>Distance</li>
-          </ul>
-          <ul className="gymList">
-            {gymData.map((item) => (
-              <li key={item.id}>
-                <Gym
-                  gymName={<Link to={`/gyms/${item.id}`}>{item.name}</Link>}
-                  rating={item.rating}
-                  reviewCount={item.review_count}
-                  renown={item.renown}
-                  price={item.price}
-                  location={item.location.display_address}
-                  distance={item.distance}
-                />
-              </li>
-            ))}
-          </ul> */}
+        </Table>
         </div>
       )}
       <Routes>
         <Route path="/gyms/:gymId" element={<GymPage />} />
       </Routes>
+      <TablePagination
+          onFormSubmit={handleFormSubmit}
+          locationValue={locationValue}
+          useCurrentLocation={useCurrentLocation}
+          currentLatitude={currentLatitude}
+          currentLongitude={currentLongitude}
+          useSort={useSort}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}/>
     </div>
   );
 }
