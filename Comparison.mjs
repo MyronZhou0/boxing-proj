@@ -36,42 +36,18 @@ async function getGymData(businessId) {
 }
 
 // Endpoint to fetch data from Yelp API
-app.get('/gymPage/:businessId', async (req, res) => {
-  const { businessId } = req.params;
+app.get('/comparer', async (req, res) => {
+  const { businessId1, businessId2} = req.params;
 
   try {
-    const gymData = await getGymData(businessId);
+    const gymData1 = await getGymData(businessId1);
+    const gymData2 = await getGymData(businessId2);
     console.log(gymData);
     const yelpUrl = gymData.url;
     console.log(yelpUrl);
-
-    // Invoke Python script with yelpUrl as argument
-    exec(`python3 -u webscraper/webscraper.py ${yelpUrl}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`exec error: ${error}`);
-        return res.status(500).json({ error: 'Failed to execute Python script' });
-      }
-
-      if (stderr) {
-        console.error(`stderr: ${stderr}`);
-      }
-
-      console.log(`stdout: ${stdout}`);
-
-      let scriptOutput;
-      try {
-        scriptOutput = JSON.parse(stdout);
-        console.log(scriptOutput);
-      } catch (parseError) {
-        console.error('Failed to parse Python script output:', parseError);
-      }
-      
-      // Send the combined data
-      res.status(200).json({
-        gymData: gymData,
-        scriptOutput: scriptOutput
-      });
-    });
+    res.status(200).json(
+        gymData
+    );
   } catch (error) {
     console.error('Error fetching data:', error.message);
     res.status(500).json({ error: 'Failed to fetch data from Yelp API' });

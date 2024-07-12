@@ -1,29 +1,65 @@
 from bs4 import BeautifulSoup
-# from webscraper import bus_web
 from transformers import pipeline
 import requests
 import json
+import re
+
+def clean_text(text):
+    """Remove leading/trailing whitespace and reduce multiple spaces to a single space."""
+    # Strip leading and trailing whitespace
+    cleaned_text = text.strip()
+    # Replace multiple whitespace characters with a single space
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+    return cleaned_text
 
 def generateGymDesc():
-    sampleText = """Thick clouds of dirt and sand fill the air as our convoy of Humvees arrives in Rafah, the first time international reporters have been allowed in since the Israeli military launched its ground assault on this city two months ago.
+    bus_web = "https://wildcardboxing.com/"
 
-As the dust settles, the scale of destruction is startling. But it is also all-too familiar.
+    try:
+        response = requests.get(bus_web, timeout=5)
+        response.raise_for_status()
+    except requests.RequestException:
+        return {"url": bus_web, "error": "Failed to reach business website", "desc": "description cannot be generated"}
 
-This part of Rafah, Gaza’s southernmost city which became the last refuge for more than a million Palestinians earlier in the war, is now unrecognizable.
+    content = BeautifulSoup(response.content, "html.parser")
+    
+    # Extracting important information
+    key_sections = []
 
-Israel has repeatedly described its ground operation in Rafah as “limited.” But in this neighborhood in southern Rafah, the destruction looks almost identical to what I’ve seen in northern Gaza, in central Gaza and in Khan Younis through the limited prism of trips into Gaza with the Israeli military.
+    # Extracting headings
+    for heading in content.find_all(["h1", "h2", "h3", "h4"]):
+        text = heading.get_text()
+        if text:
+            key_sections.append(clean_text(text))
 
-Some homes are flattened and other buildings bombed out.
+    # Extracting paragraphs and specific divs
+    for paragraph in content.find_all("p"):
+        text = paragraph.get_text()
+        if text:
+            key_sections.append(clean_text(text))
 
-“This is where the main destruction is because it was booby-trapped and because the tunnels were booby trapped,” Rear Adm. Daniel Hagari, the IDF’s top spokesman, tells me when I press him on how this represents a “limited” operation.
+    for div in content.find_all("div"):  # Adjust "specific-class" as necessary
+        text = div.get_text()
+        if text:
+            key_sections.append(clean_text(text))
 
-“And when you see destruction, it’s because either the houses were booby trapped, either when we demolished a tunnel the houses fell apart, or that Hamas fired from those houses and risked our forces and we had no other method but to make sure that our forces were safe,” Hagari added.Other parts of Rafah are not nearly as devastated, he says. But CNN cannot independently verify his claims: Israel has barred foreign journalists from entering Gaza independently and our only access is via embeds with the Israeli military. And this devastated section of Rafah is where they have brought us.
+    # Combine the extracted text
+    inputText = " ".join(key_sections)
 
-The Israeli military has brought us here not to see the destruction, but to talk about why they launched an offensive here in the first place, what they say they’ve uncovered and what they’ve accomplished."""
+    # If the text is too long, truncate it to a reasonable length for the generator
+    max_input_length = 1024  # Adjust as needed for the summarizer
+    inputText = inputText[:max_input_length] if len(inputText) > max_input_length else inputText
 
-    generator = pipeline("summarization", model="google/flan-t5-large") 
-    generatedText = generator(sampleText, min_length = 30, max_length = 100, do_sample = True, top_k=50, top_p=.95)
-    print(generatedText)
+    # Handle case when there's too little text
+    if len(inputText.strip()) == 0:
+        return {"url": bus_web, "error": "No meaningful content was found on the website", "desc": "description cannot be generated"}
+
+    print(inputText)
+    print("----------------------------------------")
+    prompt = inputText + "\n write me a summary of the text focusing on gym renown, programs available to customers, and equipment available"
+    generator = pipeline("summarization", model="facebook/bart-large-cnn") 
+    generatedText = generator(prompt, min_length=120, max_length=200, do_sample=True, top_k=50, top_p=.95)
+    return generatedText[0]["summary_text"]
 
 if __name__ == "__main__":
-    generateGymDesc()
+    print(generateGymDesc())
