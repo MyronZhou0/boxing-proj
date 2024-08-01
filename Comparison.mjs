@@ -2,14 +2,13 @@ import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { exec } from 'child_process'; // Import exec from child_process
 
 
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3003;
 
 // Enable CORS for all routes
 app.use(cors());
@@ -36,15 +35,18 @@ async function getGymData(businessId) {
 }
 
 // Endpoint to fetch data from Yelp API
-app.get('/comparer', async (req, res) => {
-  const { businessId1, businessId2} = req.params;
-
+// Activates when the link to comparison is clicked and request is sent to the backend
+app.get('/comparison/:businessId1/:businessId2', async (req, res) => {
+  const { businessId1, businessId2 } = req.params;
+  console.log(businessId1, businessId2);
   try {
     const gymData1 = await getGymData(businessId1);
     const gymData2 = await getGymData(businessId2);
+    console.log(gymData1);
+    console.log(gymData2);
+    const gymData = {gymData1: gymData1, gymData2: gymData2}
+    console.log("AAAAAAAA");
     console.log(gymData);
-    const yelpUrl = gymData.url;
-    console.log(yelpUrl);
     res.status(200).json(
         gymData
     );

@@ -8,7 +8,7 @@ import { Table, TableBody, TableHead, TableCell, TableRow, TableFooter, TablePag
 
 function GymTable() {
   const location = useLocation();
-  const isComparisonPage = location.pathname === '/comparison';
+  const isComparisonPage = location.pathname.startsWith('/comparison/');;
   const isGymPage = location.pathname.startsWith('/gyms/');
   
   // Data from Yelp API
@@ -76,8 +76,21 @@ function GymTable() {
   };
 
   const handleAddToCompare = (gymId, gymName) => {
-    setCompareData((prevCompareData) => [...prevCompareData, gymId]); 
-    alert(gymName + " has been added to comparer");
+    if(compareData.length < 2){
+      if(compareData.includes(gymId))
+      {
+        alert(gymName + " has already been added to comparer! Cannot add duplicates.");
+      }
+      else
+      {
+        setCompareData((prevCompareData) => [...prevCompareData, gymId]); 
+        alert(gymName + " has been added to comparer.");
+      }
+    }
+    else
+    {
+      alert("Cannot add more than two to compare. Please remove gym(s) from comparer.")
+    }
   };
 
   return (
@@ -97,7 +110,14 @@ function GymTable() {
             useSort={useSort}
             setSort={setSort}
           />
-          <Link to="comparison">Compare Gyms</Link>
+            <Button
+        variant="contained"
+        component={Link} 
+        to={`/comparison/${compareData[0]}/${compareData[1]}`}
+        sx={{marginLeft:"10px"}}
+      >
+        Compare Gyms
+      </Button>
           <div className="tableContainer">
             <Table sx={{ minWidth: 650 }}>
               <TableHead>
@@ -145,7 +165,7 @@ function GymTable() {
         </>
       )}
       <Routes>
-        <Route path="comparison" element={<Comparison />} />
+        <Route path="comparison/:gymId1/:gymId2" element={<Comparison />} />
         <Route path="/gyms/:gymId" element={<GymPage />} />
       </Routes>
     </div>

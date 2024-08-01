@@ -1,13 +1,17 @@
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Gym from './Gym';
-import GymPage from './GymPage'; // Assuming you have a GymPage component
+import Logo from "./Logo";
 import GymTable from './GymTable';
+import './App.css'
+
 
 function App() {
   return (
-    <GymTable/>
+    <div>
+      <Logo/>
+      <GymTable/>
+    </div>
   );
 }
 

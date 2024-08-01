@@ -54,19 +54,6 @@ function GymPage() {
           {errorHTML}
           <a href={data.scriptOutput.url}>{data.scriptOutput.url}</a>
         </div>
-      {/* Uncomment the following lines if you want to display reviews */}
-      {/* <p>Reviews:</p>
-      <ul className="gymList">
-        {data.gymData.reviews.map((review, index) => (
-          <li key={index}>
-            <Review
-              user={review.user.name}
-              review={review.text}
-              rating={review.rating}
-            />
-          </li>
-        ))}
-      </ul> */}
     </div>
   );
 }
