@@ -8,25 +8,25 @@ import { Table, TableBody, TableHead, TableCell, TableRow, TableFooter, TablePag
 
 function GymTable() {
   const location = useLocation();
-  const isComparisonPage = location.pathname.startsWith('/comparison/');;
+  const isComparisonPage = location.pathname.startsWith('/comparison/');
   const isGymPage = location.pathname.startsWith('/gyms/');
-  
+
   // Data from Yelp API
   const [gymData, setGymData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // User input from search bar
   const [locationValue, setLocationValue] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [currentLatitude, setCurrentLatitude] = useState(0);
   const [currentLongitude, setCurrentLongitude] = useState(0);
   const [useSort, setSort] = useState('distance');
-  
+
   // User input from paginationa
   const [currentPage, setCurrentPage] = useState(0);
   const [currentRowsPerPage, setCurrentRowsPerPage] = useState(10);
-  
+
   // Input sent to backend with input from search bar
   const [formData, setFormData] = useState({});
 
@@ -58,6 +58,10 @@ function GymTable() {
     fetchGymsData();
   }, [formData]);
 
+  useEffect(() => {
+    console.log(compareData);
+  }, [compareData]); // Trigger whenever compareData changes
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!gymData) return <div>No data available</div>;
@@ -76,20 +80,15 @@ function GymTable() {
   };
 
   const handleAddToCompare = (gymId, gymName) => {
-    if(compareData.length < 2){
-      if(compareData.includes(gymId))
-      {
+    if (compareData.length < 2) {
+      if (compareData.includes(gymId)) {
         alert(gymName + " has already been added to comparer! Cannot add duplicates.");
-      }
-      else
-      {
+      } else {
         setCompareData((prevCompareData) => [...prevCompareData, gymId]); 
         alert(gymName + " has been added to comparer.");
       }
-    }
-    else
-    {
-      alert("Cannot add more than two to compare. Please remove gym(s) from comparer.")
+    } else {
+      alert("Cannot add more than two to compare. Please remove gym(s) from comparer.");
     }
   };
 
@@ -110,24 +109,24 @@ function GymTable() {
             useSort={useSort}
             setSort={setSort}
           />
-            <Button
-        variant="contained"
-        component={Link} 
-        to={`/comparison/${compareData[0]}/${compareData[1]}`}
-        sx={{marginLeft:"10px"}}
-      >
-        Compare Gyms
-      </Button>
+          <Button
+            variant="contained"
+            component={Link} 
+            to={`/comparison/${compareData[0]}/${compareData[1]}`}
+            sx={{marginLeft:"10px"}}
+          >
+            Compare Gyms
+          </Button>
           <div className="tableContainer">
             <Table sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow>
                   <TableCell style={{ fontWeight: 'bold' }}>Gym Name</TableCell>
-                  <TableCell align="center" style={{ fontWeight: 'bold' }}>Rating</TableCell>
-                  <TableCell align="center" style={{ fontWeight: 'bold' }}>Review Count</TableCell>
-                  <TableCell align="center" style={{ fontWeight: 'bold' }}>Price</TableCell>
                   <TableCell align="center" style={{ fontWeight: 'bold' }}>Address</TableCell>
-                  <TableCell align="center" style={{ fontWeight: 'bold' }}>Distance (Miles)</TableCell>
+                  <TableCell align="center" style={{ fontWeight: 'bold' }}>Phone Number</TableCell>
+                  <TableCell align="center" style={{ fontWeight: 'bold' }}>Website</TableCell>
+                  <TableCell align="center" style={{ fontWeight: 'bold' }}>Email</TableCell>
+                  <TableCell align="center" style={{ fontWeight: 'bold' }}>State</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -137,15 +136,21 @@ function GymTable() {
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell component="th" scope="row">
-                      <Link to={`/gyms/${item.id}`}>{item.name}</Link>
+                      <Link to={`/gyms/${item._id}`}>{item.name}</Link>
                     </TableCell>
-                    <TableCell align="center">{item.rating}</TableCell>
+                    {/* <TableCell align="center">{item.rating}</TableCell>
                     <TableCell align="center">{item.review_count}</TableCell>
                     <TableCell align="center">{item.price ? item.price : 'N/A'}</TableCell>
                     <TableCell align="center">{item.location.display_address.join(', ')}</TableCell>
                     <TableCell align="center">{(item.distance / 1609.34).toFixed(1)} mi.</TableCell>
+                    <TableCell align="center"> */}
+                    <TableCell align="center">{item.address}</TableCell>
+                    <TableCell align="center">{item.phoneNum}</TableCell>
+                    <TableCell align="center"><a href={item.link}>{item.link}</a></TableCell>
+                    <TableCell align="center">{item.email}</TableCell>
+                    <TableCell align="center">{item.state}</TableCell>
                     <TableCell align="center">
-                      <Button onClick={()=>handleAddToCompare(item.id, item.name)}>ADD TO COMPARE</Button>
+                      <Button onClick={() => handleAddToCompare(item._id, item.name)}>ADD TO COMPARE</Button>
                     </TableCell>
                   </TableRow>
                 ))}
